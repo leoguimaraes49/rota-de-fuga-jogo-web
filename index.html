@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08121e" />
+    <title>Sprint Final</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">GAC116 • Programação Web • Atividade Prática 1</p>
+          <h1>Sprint Final</h1>
+          <p class="hero-text">
+            Colete os pacotes do projeto, cumpra a meta de cada fase e desvie dos bugs que circulam
+            pelo laboratório. O jogo foi desenvolvido apenas com HTML, CSS e JavaScript puro.
+          </p>
+        </div>
+
+        <div class="hero-card panel">
+          <h2>Como jogar</h2>
+          <ul class="rules-list">
+            <li>Use <strong>WASD</strong> ou <strong>setas</strong> para mover o jogador.</li>
+            <li>Colete os pacotes azuis para somar pontos e cumprir a meta da fase.</li>
+            <li>Evite os bugs vermelhos: cada colisão remove uma vida.</li>
+            <li>Conclua as 3 fases antes do tempo acabar para vencer.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="game-layout">
+        <aside class="sidebar panel">
+          <div>
+            <p class="section-label">Objetivo</p>
+            <h2>Entregar o projeto antes do prazo</h2>
+            <p class="muted">
+              Cada fase aumenta a quantidade de bugs em tela. A pontuação final depende da coleta e
+              da sua sobrevivência até a última rodada.
+            </p>
+          </div>
+
+          <div class="goal-card">
+            <p class="section-label">Progresso da fase</p>
+            <div class="progress-bar" aria-hidden="true">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <p id="progressLabel" class="progress-label">0 / 0 pacotes</p>
+          </div>
+
+          <div class="controls-card">
+            <p class="section-label">Controles</p>
+            <div class="controls-grid">
+              <span>W / ↑</span>
+              <span>Mover para cima</span>
+              <span>A / ←</span>
+              <span>Mover para a esquerda</span>
+              <span>S / ↓</span>
+              <span>Mover para baixo</span>
+              <span>D / →</span>
+              <span>Mover para a direita</span>
+            </div>
+          </div>
+
+          <div class="legend-card">
+            <p class="section-label">Legenda</p>
+            <div class="legend-item">
+              <span class="legend-dot player-dot"></span>
+              <span>Jogador</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot package-dot"></span>
+              <span>Pacotes do projeto</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot bug-dot"></span>
+              <span>Bugs do sistema</span>
+            </div>
+          </div>
+        </aside>
+
+        <section class="stage panel">
+          <div class="hud">
+            <div class="stat-card">
+              <span class="stat-label">Fase</span>
+              <strong id="levelValue">1</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Vidas</span>
+              <strong id="livesValue">3</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Pontos</span>
+              <strong id="scoreValue">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Tempo</span>
+              <strong id="timerValue">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Recorde</span>
+              <strong id="bestScoreValue">0</strong>
+            </div>
+          </div>
+
+          <div class="canvas-shell">
+            <canvas id="gameCanvas" width="900" height="560" aria-label="Área principal do jogo"></canvas>
+
+            <div id="overlay" class="overlay">
+              <div class="overlay-card">
+                <p class="overlay-tag">Sprint Final</p>
+                <h2 id="messageTitle">Entrega final em andamento</h2>
+                <p id="messageText">
+                  Colete os pacotes, sobreviva aos bugs e avance pelas três fases do laboratório.
+                </p>
+                <button id="messageButton" class="primary-button" type="button">Iniciar jogo</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="touch-controls" aria-label="Controles por toque">
+            <button class="control-button control-up" data-control="up" type="button">▲</button>
+            <button class="control-button control-left" data-control="left" type="button">◀</button>
+            <button class="control-button control-down" data-control="down" type="button">▼</button>
+            <button class="control-button control-right" data-control="right" type="button">▶</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
