@@ -3,59 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sprint Final</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <title>Rota de Fuga</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="container">
-      <header class="intro">
-        <p class="tag">Atividade Prática 1 • Programação Web</p>
-        <h1>Sprint Final</h1>
-        <p>
-          Colete os arquivos do projeto antes do tempo acabar e evite os bugs que atravessam a tela.
-        </p>
+    <main class="page">
+      <header class="topbar">
+        <h1>Rota de Fuga</h1>
+        <p class="subtitle">Meta: chegue a 500 pontos sem bater.</p>
       </header>
 
-      <section class="layout">
-        <aside class="panel info-panel">
-          <h2>Regras</h2>
-          <ul>
-            <li>Use as setas ou as teclas WASD para mover o jogador.</li>
-            <li>Colete 12 arquivos para vencer.</li>
-            <li>Cada colisão com um bug reduz uma vida.</li>
-            <li>O jogo termina se o tempo acabar ou se as vidas chegarem a zero.</li>
-          </ul>
+      <section class="panel game-stage">
+        <div class="hud">
+          <div class="hud-card">
+            <span>Pontuação</span>
+            <strong id="scoreValue">0</strong>
+          </div>
+          <div class="hud-card">
+            <span>Tempo</span>
+            <strong id="timeValue">0.0s</strong>
+          </div>
+          <div class="hud-card">
+            <span>Velocidade</span>
+            <strong id="speedValue">1.0x</strong>
+          </div>
+          <div class="hud-card">
+            <span>Faixa</span>
+            <strong id="laneValue">Centro</strong>
+          </div>
+        </div>
 
-          <button id="startButton" type="button">Iniciar jogo</button>
-          <p id="message" class="message">Clique no botão para começar.</p>
-        </aside>
+        <div class="track-frame">
+          <div class="track-edge track-edge-left"></div>
+          <div class="track-edge track-edge-right"></div>
 
-        <section class="panel game-panel">
-          <div class="hud">
-            <div class="hud-item">
-              <span>Vidas</span>
-              <strong id="livesValue">3</strong>
+          <div id="track" class="track">
+            <div class="road-sky"></div>
+            <div class="road-shadow"></div>
+            <div class="shoulder left"></div>
+            <div class="shoulder right"></div>
+            <div class="lane-divider divider-1"></div>
+            <div class="lane-divider divider-2"></div>
+
+            <div id="obstaclesLayer" class="obstacles-layer"></div>
+            <div id="playerCar" class="car player-car" aria-label="Carro do jogador"></div>
+
+            <div id="startScreen" class="overlay">
+              <div class="overlay-card">
+                <p class="overlay-label">Início</p>
+                <h2>Use ← e → para desviar</h2>
+                <p class="overlay-text">Objetivo: sobreviva até 500 pontos sem colisão.</p>
+                <button id="startButton" class="action-button" type="button">Iniciar</button>
+              </div>
             </div>
-            <div class="hud-item">
-              <span>Pontos</span>
-              <strong id="scoreValue">0</strong>
-            </div>
-            <div class="hud-item">
-              <span>Tempo</span>
-              <strong id="timerValue">45</strong>
-            </div>
-            <div class="hud-item">
-              <span>Fase</span>
-              <strong id="phaseValue">1</strong>
-            </div>
-            <div class="hud-item">
-              <span>Meta</span>
-              <strong id="goalValue">0/12</strong>
+
+            <div id="gameOverScreen" class="overlay hidden">
+              <div class="overlay-card">
+                <p id="endLabel" class="overlay-label">Game Over</p>
+                <h2 id="endTitle">Fim da corrida</h2>
+                <p class="overlay-text"><span id="endPrefix">Pontuação final:</span> <strong id="finalScoreValue">0</strong></p>
+                <button id="restartButton" class="action-button" type="button">Reiniciar</button>
+              </div>
             </div>
           </div>
-
-          <canvas id="gameCanvas" width="720" height="440"></canvas>
-        </section>
+        </div>
       </section>
     </main>
 

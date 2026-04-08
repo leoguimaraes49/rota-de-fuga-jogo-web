@@ -1,39 +1,34 @@
-# Sprint Final
-
-Projeto desenvolvido para a Atividade Prática 1 da disciplina **Programação Web**.
+# Rota de Fuga
 
 ## Proposta
 
-O jogador precisa coletar arquivos do projeto enquanto evita bugs que se movimentam pela tela. O objetivo é chegar a **12 pontos** antes do tempo acabar.
+Rota de Fuga é um jogo web de carro em que o jogador controla um veículo em uma pista com 3 faixas e avança por um percurso cheio de obstáculos. O objetivo é sobreviver o maior tempo possível, passar pelos objetos sem colisão e acumular pontos.
 
-## Recursos do jogo
+## Regras
 
-- HTML, CSS e JavaScript puro
-- Execução direta no navegador
-- Pontuação, vidas, tempo e reinício
-- Vitória e derrota
-- Aumento simples de dificuldade conforme a pontuação
+- Use a seta para a esquerda para mudar para a faixa da esquerda.
+- Use a seta para a direita para mudar para a faixa da direita.
+- Passe pelos obstáculos trocando de faixa no momento certo.
+- A pontuação aumenta com o tempo de sobrevivência.
+- O objetivo é alcançar 500 pontos para vencer.
+- O jogo termina quando ocorre uma colisão.
 
-## Como jogar
+## Tecnologias usadas
 
-- Use `WASD` ou as setas para mover o jogador
-- Colete os quadrados verdes
-- Evite os círculos vermelhos
-- Alcance `12 pontos` para vencer
+- HTML5
+- CSS3
+- JavaScript puro
 
-## Arquivos
+## Como executar
 
-```text
-index.html
-styles.css
-script.js
-README.md
-LICENSE
-```
+1. Baixe ou clone o projeto.
+2. Abra o arquivo `index.html` em qualquer navegador moderno.
+3. Clique em `Iniciar` para começar a partida.
 
-## Publicação no GitHub Pages
+## Como publicar no GitHub Pages
 
-1. Envie os arquivos para um repositório público no GitHub.
-2. Abra `Settings > Pages`.
-3. Escolha a branch principal e a pasta raiz.
-4. Aguarde o link público ser gerado.
+1. Crie um repositório público no GitHub.
+2. Envie os arquivos do projeto para a branch principal.
+3. No GitHub, abra `Settings > Pages`.
+4. Em `Build and deployment`, selecione a branch principal e a pasta raiz.
+5. Salve e aguarde o link público ser gerado.

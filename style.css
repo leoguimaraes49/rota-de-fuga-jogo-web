@@ -1,0 +1,418 @@
+:root {
+  --bg-top: #f4eee3;
+  --bg-bottom: #ddd1bf;
+  --panel-bg: rgba(255, 250, 243, 0.86);
+  --panel-border: rgba(67, 53, 39, 0.14);
+  --text: #1f1d1a;
+  --muted: #665d53;
+  --accent: #cc5a1e;
+  --accent-2: #2f6b5f;
+  --track-dark: #222831;
+  --track-mid: #363c46;
+  --lane-mark: rgba(255, 255, 255, 0.7);
+  --shadow: 0 22px 44px rgba(71, 55, 39, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(47, 107, 95, 0.12), transparent 24%),
+    radial-gradient(circle at 82% 16%, rgba(204, 90, 30, 0.12), transparent 20%),
+    linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+  color: var(--text);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(45deg, rgba(67, 53, 39, 0.03) 25%, transparent 25%, transparent 50%, rgba(67, 53, 39, 0.03) 50%, rgba(67, 53, 39, 0.03) 75%, transparent 75%, transparent),
+    linear-gradient(-45deg, rgba(67, 53, 39, 0.018) 25%, transparent 25%, transparent 50%, rgba(67, 53, 39, 0.018) 50%, rgba(67, 53, 39, 0.018) 75%, transparent 75%, transparent);
+  background-size: 52px 52px;
+  content: "";
+  pointer-events: none;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 18px 34px;
+}
+
+.topbar {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.topbar h1 {
+  margin: 0;
+  color: #25201a;
+  font-size: clamp(2.7rem, 4vw, 4.2rem);
+  letter-spacing: 0.02em;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 30px;
+  background: linear-gradient(180deg, rgba(255, 250, 243, 0.92), rgba(246, 239, 230, 0.88));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.game-stage {
+  padding: 22px;
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.hud-card {
+  padding: 14px 16px;
+  border: 1px solid rgba(67, 53, 39, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  text-align: center;
+}
+
+.hud-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.hud-card strong {
+  font-size: 1.28rem;
+}
+
+.track-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  border: 1px solid rgba(67, 53, 39, 0.1);
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(237, 228, 217, 0.94)),
+    radial-gradient(circle at top, rgba(47, 107, 95, 0.06), transparent 34%);
+}
+
+.track-edge {
+  position: absolute;
+  top: 52px;
+  bottom: 42px;
+  width: 110px;
+  border-radius: 999px;
+  filter: blur(42px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.track-edge-left {
+  left: 5%;
+  background: rgba(47, 107, 95, 0.18);
+}
+
+.track-edge-right {
+  right: 5%;
+  background: rgba(204, 90, 30, 0.16);
+}
+
+.track {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 780px);
+  height: min(80vh, 900px);
+  min-height: 640px;
+  border: 10px solid #f6f3ee;
+  border-radius: 34px;
+  background:
+    linear-gradient(90deg, #646b74 0, #505761 8%, var(--track-dark) 8%, var(--track-dark) 92%, #505761 92%, #646b74 100%);
+  box-shadow:
+    inset 0 24px 40px rgba(255, 255, 255, 0.03),
+    inset 0 -42px 70px rgba(0, 0, 0, 0.28),
+    0 18px 36px rgba(48, 38, 27, 0.18);
+}
+
+.track::after {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 20%),
+    radial-gradient(circle at center -8%, rgba(255, 255, 255, 0.05), transparent 34%);
+  content: "";
+  pointer-events: none;
+}
+
+.road-sky,
+.road-shadow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.road-sky {
+  top: 0;
+  height: 110px;
+  background: linear-gradient(180deg, rgba(160, 176, 207, 0.18), transparent);
+}
+
+.road-shadow {
+  bottom: 0;
+  height: 130px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.26));
+}
+
+.shoulder {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  background: repeating-linear-gradient(
+    180deg,
+    #ffffff 0 24px,
+    #be2f28 24px 48px
+  );
+}
+
+.shoulder.left {
+  left: 16px;
+}
+
+.shoulder.right {
+  right: 16px;
+}
+
+.lane-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 34px,
+    var(--lane-mark) 34px 82px,
+    transparent 82px 126px
+  );
+  transform: translateX(-50%);
+  opacity: 0.84;
+}
+
+.divider-1 {
+  left: 33.333%;
+}
+
+.divider-2 {
+  left: 66.666%;
+}
+
+.obstacles-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.car,
+.obstacle {
+  position: absolute;
+}
+
+.player-car {
+  width: 74px;
+  height: 142px;
+  border: 3px solid rgba(255, 255, 255, 0.24);
+  border-radius: 24px 24px 16px 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 14%),
+    linear-gradient(180deg, #5ab0ff 0%, #2563eb 55%, #163b93 100%);
+  box-shadow:
+    0 18px 28px rgba(12, 82, 220, 0.28),
+    inset 0 -12px 18px rgba(0, 0, 0, 0.18);
+  transition: left 220ms ease;
+  will-change: left, top, transform;
+}
+
+.player-car::before,
+.obstacle-car::before {
+  position: absolute;
+  left: 13px;
+  right: 13px;
+  top: 18px;
+  height: 28px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(243, 248, 255, 0.95), rgba(189, 216, 255, 0.72));
+  content: "";
+}
+
+.player-car::after,
+.obstacle-car::after {
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 18px;
+  height: 22px;
+  border-radius: 10px;
+  background: rgba(3, 10, 23, 0.32);
+  content: "";
+}
+
+.obstacle {
+  display: block;
+  transform-origin: center top;
+}
+
+.obstacle-car {
+  width: 70px;
+  height: 132px;
+  border: 3px solid rgba(255, 255, 255, 0.24);
+  border-radius: 24px 24px 16px 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 16%),
+    linear-gradient(180deg, #ff7b72 0%, #cc3b32 54%, #93231f 100%);
+  box-shadow: inset 0 -12px 18px rgba(0, 0, 0, 0.16);
+}
+
+.obstacle-cone {
+  width: 48px;
+  height: 88px;
+  background: linear-gradient(180deg, #ffb56a 0%, #de641d 100%);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.2));
+}
+
+.obstacle-cone::before {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 38px;
+  height: 9px;
+  background: rgba(255, 255, 255, 0.84);
+  content: "";
+}
+
+.obstacle-block {
+  width: 68px;
+  height: 68px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 20%),
+    linear-gradient(180deg, #ffe470 0%, #e1ad10 100%);
+  box-shadow:
+    inset 0 -10px 0 rgba(0, 0, 0, 0.14),
+    0 12px 16px rgba(0, 0, 0, 0.16);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(6, 10, 18, 0.26), rgba(6, 10, 18, 0.68));
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-label {
+  margin: 0 0 10px;
+  color: #7fd0d4;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.overlay-card {
+  width: min(100%, 360px);
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 26px;
+  background: rgba(11, 19, 33, 0.94);
+  color: #f6f8fb;
+  text-align: center;
+  box-shadow: 0 24px 44px rgba(0, 0, 0, 0.26);
+}
+
+.overlay-card h2 {
+  margin: 0 0 18px;
+  font-size: 1.9rem;
+}
+
+.overlay-card p {
+  margin: 0 0 20px;
+  color: #b4c2d3;
+  line-height: 1.6;
+}
+
+.overlay-text {
+  font-size: 0.98rem;
+}
+
+.action-button {
+  padding: 13px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), #f7c24f);
+  color: #21180f;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 24px rgba(204, 90, 30, 0.22);
+}
+
+.action-button:hover {
+  filter: brightness(1.05);
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 14px 10px 24px;
+  }
+
+  .game-stage {
+    padding: 16px;
+  }
+
+  .hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .track-frame {
+    padding: 14px;
+  }
+
+  .track {
+    width: min(100%, 560px);
+    height: min(74vh, 760px);
+    min-height: 540px;
+  }
+
+  .player-car {
+    width: 64px;
+    height: 124px;
+  }
+}

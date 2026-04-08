@@ -1,338 +1,358 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const track = document.getElementById("track");
+const obstaclesLayer = document.getElementById("obstaclesLayer");
+const playerCar = document.getElementById("playerCar");
 
-const startButton = document.getElementById("startButton");
-const message = document.getElementById("message");
-const livesValue = document.getElementById("livesValue");
 const scoreValue = document.getElementById("scoreValue");
-const timerValue = document.getElementById("timerValue");
-const phaseValue = document.getElementById("phaseValue");
-const goalValue = document.getElementById("goalValue");
+const timeValue = document.getElementById("timeValue");
+const speedValue = document.getElementById("speedValue");
+const laneValue = document.getElementById("laneValue");
+const finalScoreValue = document.getElementById("finalScoreValue");
+const endLabel = document.getElementById("endLabel");
+const endTitle = document.getElementById("endTitle");
+const endPrefix = document.getElementById("endPrefix");
 
-const keys = {
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-};
+const startScreen = document.getElementById("startScreen");
+const gameOverScreen = document.getElementById("gameOverScreen");
+const startButton = document.getElementById("startButton");
+const restartButton = document.getElementById("restartButton");
 
-const config = {
-  targetScore: 12,
-  totalTime: 45,
-  playerSpeed: 220,
-  enemyBaseSpeed: 120,
-};
+const laneDividers = document.querySelectorAll(".lane-divider");
+const shoulders = document.querySelectorAll(".shoulder");
+
+const LANE_COUNT = 3;
+const BASE_SPEED = 150;
+const MAX_SPEED = 250;
+const START_OBSTACLE_DISTANCE = 420;
+const WIN_SCORE = 500;
+
+const obstacleTypes = [
+  { className: "obstacle-car", width: 70, height: 132 },
+  { className: "obstacle-cone", width: 48, height: 88 },
+  { className: "obstacle-block", width: 68, height: 68 },
+];
+
+const laneLabels = ["Esquerda", "Centro", "Direita"];
 
 const state = {
-  status: "ready",
+  isRunning: false,
+  laneIndex: 1,
   score: 0,
-  lives: 3,
-  timeLeft: config.totalTime,
-  phase: 1,
-  lastTime: 0,
-  invulnerability: 0,
+  time: 0,
+  distance: 0,
+  speed: BASE_SPEED,
+  nextObstacleDistance: START_OBSTACLE_DISTANCE,
+  obstacles: [],
+  lastFrameTime: 0,
+  animationId: null,
 };
 
-let player = createPlayer();
-let fileItem = createFile();
-let enemies = [];
-
-function createPlayer() {
-  return {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    radius: 14,
-  };
-}
-
-function createFile() {
-  return {
-    x: random(40, canvas.width - 40),
-    y: random(40, canvas.height - 40),
-    size: 18,
-  };
-}
-
-function createEnemy(speedMultiplier = 1) {
-  const speed = random(config.enemyBaseSpeed, config.enemyBaseSpeed + 40) * speedMultiplier;
-  const angle = random(0, Math.PI * 2);
-
-  return {
-    x: random(30, canvas.width - 30),
-    y: random(30, canvas.height - 30),
-    radius: 15,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed,
-  };
-}
-
-function random(min, max) {
-  return Math.random() * (max - min) + min;
-}
+let metrics = readMetrics();
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function circleCollision(a, b) {
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  return Math.hypot(dx, dy) < a.radius + b.radius;
+function randomBetween(min, max) {
+  return Math.random() * (max - min) + min;
 }
 
-function rectCircleCollision(circle, rect) {
-  const nearestX = clamp(circle.x, rect.x, rect.x + rect.size);
-  const nearestY = clamp(circle.y, rect.y, rect.y + rect.size);
-  const dx = circle.x - nearestX;
-  const dy = circle.y - nearestY;
-  return dx * dx + dy * dy < circle.radius * circle.radius;
+// Lê as medidas da pista e do carro para posicionar os elementos nas faixas.
+function readMetrics() {
+  const trackWidth = track.clientWidth;
+  const trackHeight = track.clientHeight;
+  const laneWidth = trackWidth / LANE_COUNT;
+  const playerWidth = playerCar.offsetWidth || 74;
+  const playerHeight = playerCar.offsetHeight || 142;
+
+  return {
+    trackWidth,
+    trackHeight,
+    playerWidth,
+    playerHeight,
+    playerTop: trackHeight - playerHeight - 34,
+    laneCenters: [laneWidth * 0.5, laneWidth * 1.5, laneWidth * 2.5],
+  };
+}
+
+function laneToLeft(laneIndex, elementWidth) {
+  return metrics.laneCenters[laneIndex] - elementWidth / 2;
+}
+
+// Posiciona o carro do jogador sempre em uma das três faixas.
+function positionPlayer() {
+  const left = laneToLeft(state.laneIndex, metrics.playerWidth);
+  playerCar.style.left = `${left}px`;
+  playerCar.style.top = `${metrics.playerTop}px`;
+  playerCar.style.transform = "rotate(0deg)";
 }
 
 function updateHud() {
-  livesValue.textContent = state.lives;
-  scoreValue.textContent = state.score;
-  timerValue.textContent = Math.ceil(state.timeLeft);
-  phaseValue.textContent = state.phase;
-  goalValue.textContent = `${state.score}/${config.targetScore}`;
+  scoreValue.textContent = String(state.score);
+  timeValue.textContent = `${state.time.toFixed(1)}s`;
+  speedValue.textContent = `${(state.speed / BASE_SPEED).toFixed(1)}x`;
+  laneValue.textContent = laneLabels[state.laneIndex];
 }
 
-function setMessage(text) {
-  message.textContent = text;
+function clearObstacles() {
+  for (const obstacle of state.obstacles) {
+    obstacle.element.remove();
+  }
+
+  state.obstacles = [];
 }
 
-function getPhaseFromScore() {
-  if (state.score >= 8) return 3;
-  if (state.score >= 4) return 2;
-  return 1;
+function chooseLane() {
+  return Math.floor(Math.random() * LANE_COUNT);
 }
 
-function resetGame() {
-  state.status = "running";
-  state.score = 0;
-  state.lives = 3;
-  state.timeLeft = config.totalTime;
-  state.phase = 1;
-  state.lastTime = 0;
-  state.invulnerability = 0;
+// Cria um obstáculo em uma faixa aleatória e registra sua posição no percurso.
+function createObstacle(distance) {
+  const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+  const laneIndex = chooseLane();
+  const element = document.createElement("div");
 
-  player = createPlayer();
-  fileItem = createFile();
-  enemies = [createEnemy(), createEnemy(), createEnemy()];
+  element.className = `obstacle ${type.className}`;
+  element.style.width = `${type.width}px`;
+  element.style.height = `${type.height}px`;
 
-  updateHud();
-  setMessage("Jogo em andamento. Colete 12 arquivos para vencer.");
-  startButton.textContent = "Reiniciar jogo";
+  const obstacle = {
+    laneIndex,
+    width: type.width,
+    height: type.height,
+    distance,
+    x: laneToLeft(laneIndex, type.width),
+    y: -type.height,
+    element,
+  };
+
+  element.style.left = `${obstacle.x}px`;
+  element.style.top = `${obstacle.y}px`;
+
+  obstaclesLayer.appendChild(element);
+  state.obstacles.push(obstacle);
 }
 
-function finishGame(type) {
-  state.status = type;
+function removeObstacle(index) {
+  state.obstacles[index].element.remove();
+  state.obstacles.splice(index, 1);
+}
 
-  if (type === "win") {
-    setMessage("Você venceu. Todos os arquivos do projeto foram coletados.");
+// Gera obstáculos sempre alguns metros à frente do carro.
+function generateObstacles() {
+  const visibleDistance = state.distance + metrics.trackHeight + 900;
+
+  while (state.nextObstacleDistance < visibleDistance) {
+    createObstacle(state.nextObstacleDistance);
+    state.nextObstacleDistance += randomBetween(320, 460);
+  }
+}
+
+function removePassedObstacles() {
+  for (let index = state.obstacles.length - 1; index >= 0; index -= 1) {
+    if (state.obstacles[index].distance < state.distance - 220) {
+      removeObstacle(index);
+    }
+  }
+}
+
+// Converte a posição do obstáculo no percurso para a posição dele na tela.
+function renderObstacles() {
+  for (const obstacle of state.obstacles) {
+    obstacle.x = laneToLeft(obstacle.laneIndex, obstacle.width);
+    obstacle.y = metrics.trackHeight - (obstacle.distance - state.distance) - obstacle.height;
+
+    const visible =
+      obstacle.y < metrics.trackHeight + 40 &&
+      obstacle.y + obstacle.height > -120;
+
+    obstacle.element.style.left = `${obstacle.x}px`;
+    obstacle.element.style.top = `${obstacle.y}px`;
+    obstacle.element.style.display = visible ? "block" : "none";
+  }
+}
+
+function rectanglesOverlap(a, b) {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+}
+
+// Verifica se o carro do jogador bateu em algum obstáculo visível.
+function detectCollision() {
+  const playerRect = {
+    x: laneToLeft(state.laneIndex, metrics.playerWidth),
+    y: metrics.playerTop,
+    width: metrics.playerWidth,
+    height: metrics.playerHeight,
+  };
+
+  return state.obstacles.some((obstacle) => {
+    if (obstacle.element.style.display === "none") {
+      return false;
+    }
+
+    return rectanglesOverlap(playerRect, {
+      x: obstacle.x,
+      y: obstacle.y,
+      width: obstacle.width,
+      height: obstacle.height,
+    });
+  });
+}
+
+function updateRoadMotion() {
+  const offset = state.distance * 0.8;
+
+  for (const divider of laneDividers) {
+    divider.style.backgroundPositionY = `${offset}px`;
+  }
+
+  for (const shoulder of shoulders) {
+    shoulder.style.backgroundPositionY = `${offset}px`;
+  }
+}
+
+function updateSpeed() {
+  state.speed = Math.min(BASE_SPEED + state.time * 6, MAX_SPEED);
+}
+
+function updateScore(deltaTime) {
+  state.time += deltaTime;
+  state.score = Math.floor(state.time * 10);
+}
+
+function endGame(result) {
+  state.isRunning = false;
+  finalScoreValue.textContent = String(state.score);
+
+  if (result === "win") {
+    endLabel.textContent = "Vitória";
+    endTitle.textContent = "Corrida concluída";
+    endPrefix.textContent = "Pontuação da vitória:";
   } else {
-    setMessage("Fim de jogo. Clique no botão para tentar novamente.");
+    endLabel.textContent = "Game Over";
+    endTitle.textContent = "Fim da corrida";
+    endPrefix.textContent = "Pontuação final:";
   }
+
+  gameOverScreen.classList.remove("hidden");
 }
 
-function movePlayer(deltaTime) {
-  let dx = 0;
-  let dy = 0;
+// Atualiza pontuação, velocidade, distância e colisão a cada frame.
+function updateGame(deltaTime) {
+  updateScore(deltaTime);
+  updateSpeed();
+  state.distance += state.speed * deltaTime;
 
-  if (keys.up) dy -= 1;
-  if (keys.down) dy += 1;
-  if (keys.left) dx -= 1;
-  if (keys.right) dx += 1;
+  generateObstacles();
+  removePassedObstacles();
+  renderObstacles();
+  updateRoadMotion();
 
-  if (dx !== 0 || dy !== 0) {
-    const length = Math.hypot(dx, dy);
-    dx /= length;
-    dy /= length;
-  }
-
-  player.x += dx * config.playerSpeed * deltaTime;
-  player.y += dy * config.playerSpeed * deltaTime;
-  player.x = clamp(player.x, player.radius, canvas.width - player.radius);
-  player.y = clamp(player.y, player.radius, canvas.height - player.radius);
-}
-
-function moveEnemies(deltaTime) {
-  for (const enemy of enemies) {
-    enemy.x += enemy.vx * deltaTime;
-    enemy.y += enemy.vy * deltaTime;
-
-    if (enemy.x - enemy.radius <= 0 || enemy.x + enemy.radius >= canvas.width) {
-      enemy.vx *= -1;
-    }
-
-    if (enemy.y - enemy.radius <= 0 || enemy.y + enemy.radius >= canvas.height) {
-      enemy.vy *= -1;
-    }
-  }
-}
-
-function collectFile() {
-  state.score += 1;
-  fileItem = createFile();
-
-  const newPhase = getPhaseFromScore();
-  if (newPhase > state.phase) {
-    state.phase = newPhase;
-    enemies.push(createEnemy(1 + state.phase * 0.15));
-    setMessage(`Fase ${state.phase} iniciada. Agora há mais bugs na tela.`);
-  }
-
-  if (state.score >= config.targetScore) {
+  if (state.score >= WIN_SCORE) {
     updateHud();
-    finishGame("win");
-  }
-}
-
-function loseLife() {
-  if (state.invulnerability > 0) {
+    endGame("win");
     return;
   }
 
-  state.lives -= 1;
-  state.invulnerability = 1;
-  player.x = canvas.width / 2;
-  player.y = canvas.height / 2;
-
-  if (state.lives <= 0) {
-    finishGame("lose");
-  }
-}
-
-function update(deltaTime) {
-  if (state.status !== "running") {
-    return;
-  }
-
-  state.timeLeft -= deltaTime;
-  if (state.timeLeft <= 0) {
-    state.timeLeft = 0;
-    finishGame("lose");
-    updateHud();
-    return;
-  }
-
-  if (state.invulnerability > 0) {
-    state.invulnerability -= deltaTime;
-  }
-
-  movePlayer(deltaTime);
-  moveEnemies(deltaTime);
-
-  if (rectCircleCollision(player, fileItem)) {
-    collectFile();
-  }
-
-  for (const enemy of enemies) {
-    if (circleCollision(player, enemy)) {
-      loseLife();
-      break;
-    }
+  if (detectCollision()) {
+    endGame("lose");
   }
 
   updateHud();
-}
-
-function drawBackground() {
-  ctx.fillStyle = "#0f172a";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-  for (let x = 0; x <= canvas.width; x += 40) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
-    ctx.stroke();
-  }
-
-  for (let y = 0; y <= canvas.height; y += 40) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
-    ctx.stroke();
-  }
-}
-
-function drawPlayer() {
-  if (state.invulnerability > 0 && Math.floor(state.invulnerability * 10) % 2 === 0) {
-    return;
-  }
-
-  ctx.fillStyle = "#60a5fa";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawFile() {
-  ctx.fillStyle = "#22c55e";
-  ctx.fillRect(fileItem.x, fileItem.y, fileItem.size, fileItem.size);
-
-  ctx.fillStyle = "#dcfce7";
-  ctx.fillRect(fileItem.x + 4, fileItem.y + 4, fileItem.size - 8, fileItem.size - 8);
-}
-
-function drawEnemies() {
-  for (const enemy of enemies) {
-    ctx.fillStyle = "#ef4444";
-    ctx.beginPath();
-    ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawStatus() {
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "16px Arial";
-  ctx.fillText("Azul: jogador", 16, 24);
-  ctx.fillText("Verde: arquivo", 16, 46);
-  ctx.fillText("Vermelho: bug", 16, 68);
-}
-
-function render() {
-  drawBackground();
-  drawFile();
-  drawEnemies();
-  drawPlayer();
-  drawStatus();
 }
 
 function gameLoop(timestamp) {
-  if (!state.lastTime) {
-    state.lastTime = timestamp;
+  if (!state.isRunning) {
+    return;
   }
 
-  const deltaTime = Math.min((timestamp - state.lastTime) / 1000, 0.03);
-  state.lastTime = timestamp;
+  if (!state.lastFrameTime) {
+    state.lastFrameTime = timestamp;
+  }
 
-  update(deltaTime);
-  render();
-  requestAnimationFrame(gameLoop);
+  const deltaTime = Math.min((timestamp - state.lastFrameTime) / 1000, 0.03);
+  state.lastFrameTime = timestamp;
+
+  updateGame(deltaTime);
+
+  if (state.isRunning) {
+    state.animationId = window.requestAnimationFrame(gameLoop);
+  }
 }
 
-window.addEventListener("keydown", (event) => {
-  if (event.key.includes("Arrow")) {
-    event.preventDefault();
+// Reinicia a partida do zero.
+function resetGame() {
+  clearObstacles();
+  metrics = readMetrics();
+
+  state.isRunning = true;
+  state.laneIndex = 1;
+  state.score = 0;
+  state.time = 0;
+  state.distance = 0;
+  state.speed = BASE_SPEED;
+  state.nextObstacleDistance = START_OBSTACLE_DISTANCE;
+  state.lastFrameTime = 0;
+
+  positionPlayer();
+  generateObstacles();
+  renderObstacles();
+  updateRoadMotion();
+  updateHud();
+
+  startScreen.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
+
+  if (state.animationId) {
+    window.cancelAnimationFrame(state.animationId);
   }
 
-  if (event.key === "ArrowUp" || event.key === "w" || event.key === "W") keys.up = true;
-  if (event.key === "ArrowDown" || event.key === "s" || event.key === "S") keys.down = true;
-  if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") keys.left = true;
-  if (event.key === "ArrowRight" || event.key === "d" || event.key === "D") keys.right = true;
-});
+  state.animationId = window.requestAnimationFrame(gameLoop);
+}
 
-window.addEventListener("keyup", (event) => {
-  if (event.key === "ArrowUp" || event.key === "w" || event.key === "W") keys.up = false;
-  if (event.key === "ArrowDown" || event.key === "s" || event.key === "S") keys.down = false;
-  if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") keys.left = false;
-  if (event.key === "ArrowRight" || event.key === "d" || event.key === "D") keys.right = false;
-});
+// Move o carro para a esquerda ou direita, uma faixa por vez.
+function movePlayer(direction) {
+  if (!state.isRunning) {
+    return;
+  }
+
+  state.laneIndex += direction;
+  state.laneIndex = clamp(state.laneIndex, 0, LANE_COUNT - 1);
+  positionPlayer();
+  updateHud();
+}
+
+function handleKeyDown(event) {
+  if (event.repeat) {
+    return;
+  }
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    movePlayer(-1);
+  }
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    movePlayer(1);
+  }
+}
+
+function handleResize() {
+  metrics = readMetrics();
+  positionPlayer();
+  renderObstacles();
+}
 
 startButton.addEventListener("click", resetGame);
+restartButton.addEventListener("click", resetGame);
+window.addEventListener("keydown", handleKeyDown);
+window.addEventListener("resize", handleResize);
 
+positionPlayer();
+updateRoadMotion();
 updateHud();
-render();
-requestAnimationFrame(gameLoop);
