@@ -24,6 +24,7 @@ Rota de Fuga é um jogo web de carro em que o jogador controla um veículo em um
 1. Baixe ou clone o projeto.
 2. Abra o arquivo `index.html` em qualquer navegador moderno.
 3. Clique em `Iniciar` para começar a partida.
+
 ## Testes
 
 Com Node.js 20 ou superior instalado, execute na pasta do projeto:
